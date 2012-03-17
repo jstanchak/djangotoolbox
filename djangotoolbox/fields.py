@@ -59,7 +59,7 @@ class AbstractIterableField(models.Field):
         super(AbstractIterableField, self).contribute_to_class(cls, name)
 
         metaclass = getattr(self.item_field, '__metaclass__', None)
-        if issubclass(metaclass, models.SubfieldBase):
+        if metaclass and issubclass(metaclass, models.SubfieldBase):
             setattr(cls, self.name, _HandleAssignment(self))
 
     @property
@@ -152,7 +152,7 @@ class SetField(AbstractIterableField):
     """
     _type = set
     db_type_prefix = 'SetField'
-    
+
     def value_to_string(self, obj):
         """
         Custom method for serialization, as JSON doesn't support serializing sets.
@@ -263,7 +263,7 @@ class EmbeddedModelField(models.Field):
 
         value_list = []
         for field in embedded_instance._meta.fields:
-            add = not embedded_instance._entity_exists
+            add = embedded_instance._state.adding
             value = field.pre_save(embedded_instance, add)
             if field.primary_key and value is None:
                 # exclude unset pks ({"id" : None})
@@ -276,7 +276,7 @@ class EmbeddedModelField(models.Field):
             values.update({'_module' : embedded_instance.__class__.__module__,
                            '_model'  : embedded_instance.__class__.__name__})
         # This instance will exist in the db very soon.
-        embedded_instance._entity_exists = True
+        embedded_instance._state.adding = False
         return values
 
     # TODO/XXX: Remove this once we have a cleaner solution
@@ -303,4 +303,6 @@ class EmbeddedModelField(models.Field):
                 data[str(field.attname)] = values[field.column]
             except KeyError:
                 pass
-        return model(__entity_exists=True, **data)
+        result = model(**data)
+        result._state.adding = False
+        return result

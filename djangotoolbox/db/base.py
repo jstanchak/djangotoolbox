@@ -23,10 +23,6 @@ class NonrelDatabaseFeatures(BaseDatabaseFeatures):
         return False
 
 class NonrelDatabaseOperations(BaseDatabaseOperations):
-    def __init__(self, connection):
-        self.connection = connection
-        super(NonrelDatabaseOperations, self).__init__()
-
     def quote_name(self, name):
         return name
 

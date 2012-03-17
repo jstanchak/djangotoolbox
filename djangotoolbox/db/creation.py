@@ -26,7 +26,6 @@ class NonrelDatabaseCreation(BaseDatabaseCreation):
         'TextField':         'longtext',
         'TimeField':         'time',
         'URLField':          'text',
-        'XMLField':          'longtext',
 
         'BlobField':         'blob',
         'RawField':          'raw',

@@ -344,16 +344,24 @@ class NonrelCompiler(SQLCompiler):
 
 class NonrelInsertCompiler(object):
     def execute_sql(self, return_id=False):
-        data = {}
-        for (field, value), column in zip(self.query.values, self.query.columns):
-            if field is not None:
-                if not field.null and value is None:
+        docs = []
+        for obj in self.query.objs:
+            doc = {}
+            for field in self.query.fields:
+                value = field.get_db_prep_save(
+                    # TODO don't always call pre-save
+                    getattr(obj, field.attname) if self.query.raw else field.pre_save(obj, True),
+                    connection=self.connection
+                )
+                if value is None and not field.null:
                     raise IntegrityError("You can't set %s (a non-nullable "
-                                        "field) to None!" % field.name)
+                                         "field) to None!" % field.name)
                 db_type = field.db_type(connection=self.connection)
                 value = self.convert_value_for_db(db_type, value)
-            data[column] = value
-        return self.insert(data, return_id=return_id)
+
+                doc[field.column] = value
+            docs.append(doc)
+        return self.insert(docs, return_id=return_id)
 
     def insert(self, values, return_id):
         """
