@@ -353,7 +353,7 @@ class NonrelInsertCompiler(object):
                     getattr(obj, field.attname) if self.query.raw else field.pre_save(obj, True),
                     connection=self.connection
                 )
-                if value is None and not field.null:
+                if value is None and not field.null and not field.primary_key:
                     raise IntegrityError("You can't set %s (a non-nullable "
                                          "field) to None!" % field.name)
                 db_type = field.db_type(connection=self.connection)
