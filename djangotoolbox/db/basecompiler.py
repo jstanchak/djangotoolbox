@@ -349,8 +349,7 @@ class NonrelInsertCompiler(object):
             doc = {}
             for field in self.query.fields:
                 value = field.get_db_prep_save(
-                    # TODO don't always call pre-save
-                    getattr(obj, field.attname) if self.query.raw else field.pre_save(obj, True),
+                    getattr(obj, field.attname) if self.query.raw else field.pre_save(obj, obj._state.adding),
                     connection=self.connection
                 )
                 if value is None and not field.null and not field.primary_key:
