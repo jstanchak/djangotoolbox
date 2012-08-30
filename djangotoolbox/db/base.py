@@ -91,7 +91,7 @@ class NonrelDatabaseOperations(BaseDatabaseOperations):
 
     def __init__(self, connection):
         self.connection = connection
-        super(NonrelDatabaseOperations, self).__init__()
+        super(NonrelDatabaseOperations, self).__init__(connection)
 
     def pk_default_value(self):
         """
